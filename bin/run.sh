@@ -13,6 +13,8 @@ if [ -z "${GLUSTER_HOSTS}" ]; then
    echo "*** If not, please link gluster service as \"${GLUSTER_HOST}\""
    echo "*** Exiting ..."
    exit 1
+else
+   echo "GLUSTER_HOSTS set to ${GLUSTER_HOSTS}"
 fi
 export DB_HOSTS=`dig +short ${DB_HOST}`
 if [ -z "${DB_HOSTS}" ]; then
@@ -21,6 +23,8 @@ if [ -z "${DB_HOSTS}" ]; then
    echo "*** If not, please link gluster service as \"${DB_HOST}\""
    echo "*** Exiting ..."
    exit 1
+else
+   echo "DB_HOSTS set to ${DB_HOSTS}"
 fi
 
 if [ "${DB_PASSWORD}" == "**ChangeMe**" -o -z "${DB_PASSWORD}" ]; then
@@ -29,14 +33,17 @@ if [ "${DB_PASSWORD}" == "**ChangeMe**" -o -z "${DB_PASSWORD}" ]; then
       echo "ERROR: Could not retreive PXC_ROOT_PASSWORD from PXC service - DB_ENV_PXC_ROOT_PASSWORD env var is empty - Exiting..."
       exit 0
    fi
+   echo "DB_PASSWORD has been changed to ${DB_PASSWORD}"
 fi
 
 if [ "${WP_DB_NAME}" == "**ChangeMe**" -o -z "${WP_DB_NAME}" ]; then
    WP_DB_NAME=`echo "${WORDPRESS_NAME}" | sed "s/\./_/g"`
+   echo "WP_DB_NAME has been changed to ${WP_DB_NAME}"
 fi
 
 if [ "${HTTP_DOCUMENTROOT}" == "**ChangeMe**" -o -z "${HTTP_DOCUMENTROOT}" ]; then
    HTTP_DOCUMENTROOT=${GLUSTER_VOL_PATH}/${WORDPRESS_NAME}
+   echo "HTTP_DOCUMENTROOT has been changed to ${HTTP_DOCUMENTROOT}"
 fi
 
 ### Prepare configuration
@@ -47,7 +54,7 @@ perl -p -i -e "s/HTTP_DOCUMENTROOT/${HTTP_ESCAPED_DOCROOT}/g" /etc/nginx/sites-e
 
 # php-fpm config
 PHP_ESCAPED_SESSION_PATH=`echo ${PHP_SESSION_PATH} | sed "s/\//\\\\\\\\\//g"`
-perl -p -i -e "s/;?session.save_path\s*=.*/session.save_path = \"${PHP_ESCAPED_SESSION_PATH}\"/g" /etc/php5/fpm/php.ini
+perl -p -i -e "s/;?session.save_path\s*=.*/session.save_path = \"${PHP_ESCAPED_SESSION_PATH}\"/g" /etc/php/7.0/fpm/php.ini
 
 ALIVE=0
 for glusterHost in ${GLUSTER_HOSTS}; do
