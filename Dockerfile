@@ -6,9 +6,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y python-software-properties software-properties-common
+
+RUN add-apt-repository -y ppa:ondrej/php && \
+    apt-get update && \
+    apt-get install -y --force-yes php7.0-fpm php7.0-mysql php7.0-mcrypt php7.0-opcache
+
 RUN add-apt-repository -y ppa:gluster/glusterfs-3.5 && \
     apt-get update && \
-    apt-get install -y nginx php5-fpm php5-mysql php-apc supervisor glusterfs-client curl haproxy pwgen unzip mysql-client dnsutils
+    apt-get install -y nginx supervisor glusterfs-client curl haproxy pwgen unzip mysql-client dnsutils
 
 ENV WORDPRESS_VERSION 4.2.2
 ENV WORDPRESS_NAME wordpress
@@ -35,6 +40,8 @@ ADD ./etc/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ADD ./etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg
 ADD ./etc/nginx/sites-enabled/wordpress /etc/nginx/sites-enabled/wordpress
 
+RUN mkdir -p /run/php
+
 # nginx config
 RUN sed -i -e"s/keepalive_timeout\s*65/keepalive_timeout 2/" /etc/nginx/nginx.conf
 RUN sed -i -e"s/keepalive_timeout 2/keepalive_timeout 2;\n\tclient_max_body_size 100m/" /etc/nginx/nginx.conf
@@ -42,10 +49,10 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 RUN rm -f /etc/nginx/sites-enabled/default
 
 # php-fpm config
-RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php5/fpm/php.ini
-RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc/php5/fpm/php.ini
-RUN sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php5/fpm/php.ini
-RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf
+RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php/7.0/fpm/php.ini
+RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" /etc/php/7.0/fpm/php.ini
+RUN sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" /etc/php/7.0/fpm/php.ini
+RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php/7.0/fpm/php-fpm.conf
 
 # HAProxy
 RUN perl -p -i -e "s/ENABLED=0/ENABLED=1/g" /etc/default/haproxy
