@@ -42,6 +42,10 @@ ADD ./etc/nginx/sites-enabled/wordpress /etc/nginx/sites-enabled/wordpress
 
 RUN mkdir -p /run/php
 
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    sudo mv wp-cli.phar /usr/local/bin/wp
+
 # nginx config
 RUN sed -i -e"s/keepalive_timeout\s*65/keepalive_timeout 2/" /etc/nginx/nginx.conf
 RUN sed -i -e"s/keepalive_timeout 2/keepalive_timeout 2;\n\tclient_max_body_size 100m/" /etc/nginx/nginx.conf
